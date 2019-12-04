@@ -1,4 +1,4 @@
-(ns advent.day1)
+(ns advent.day2)
 (use 'clojure.test)
 
 ;;;;;;;;;;;;;;;;;;;; This code is pbly ugly even to Cljoure standards
