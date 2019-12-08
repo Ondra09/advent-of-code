@@ -11,6 +11,9 @@
 (map count
  (partition (* 25 6) (* 25 6) (str input)))
 
+
+;; instead of reduce this could have been solved by
+;; calling frequencies on each layer as well!
 (let [[m0 ones twos] (apply min-key
                             #(nth %1 0)
                             (map (fn [arr]
@@ -33,8 +36,6 @@
   (if (= x \2)
     (when rest (apply final-color rest))
     x))
-
-(final-color \2 \2 \2 \0 \1 \2 \2 \0)
 
 (def result-2 (apply (partial map final-color) (partition img-size img-size input)))
 
