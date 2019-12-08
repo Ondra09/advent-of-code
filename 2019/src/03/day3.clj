@@ -21,6 +21,16 @@
    :steps 410})
 
 
+;; I have learned that this could be deconstructed like this:
+;; (defn test [d]
+;;   (let [[dir & r] (first d)]
+;;     r ))
+;; (test ["D334", "U33"])
+;; but intput must be as string
+;; deconstruction dir is char and r is list of chars of rest
+
+
+
 (defn decode-direction [dir]
   (let [dir-name (name dir)
         first-char (subs dir-name 0 1)
