@@ -83,10 +83,10 @@
 (defn get-path-hops-number [tree]
   (let [you-path (set (path-to-root tree "YOU"))
         san-path (set (path-to-root tree "SAN"))]
-    (+ (set/difference you-path san-path)
-       (set/difference san-path you-path))))
+    (+ (count (set/difference you-path san-path))
+       (count (set/difference san-path you-path)))))
 
-(get-path-hops-number (create-tree split-test-input))
+(get-path-hops-number (create-tree split-input))
 
 
 ;; (create-tree split-input)
