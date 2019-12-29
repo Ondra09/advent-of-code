@@ -38,7 +38,7 @@
                   ;;(println "Code2 : " target "  " (nth input target))
                   [(assoc input target (* x y)) (+ sp 4) b-offset input-data output-data :ok]) 2 1] ;; mul 2 params, one store param
     (= code 3) [(fn [[input sp b-offset input-data output-data] target] ;; store
-                  ;;(println "storing to: " target)
+                  ;; (println "storing to: " target)
                   (if (empty? input-data)
                     [input sp b-offset input-data output-data :block]
                     [(assoc input target (first input-data)) (+ sp 2) b-offset (drop 1 input-data) output-data :ok])) 0 1] ;; 0 read param; 1 store
@@ -58,6 +58,7 @@
                     [(assoc input target 1) (+ sp 4) b-offset input-data output-data :ok]
                     [(assoc input target 0) (+ sp 4) b-offset input-data output-data :ok])) 2 1] ;; less than
     (= code 8) [(fn [[input sp b-offset input-data output-data] x y target]
+                  ;; (println "8")
                   (if (= x y)
                     [(assoc input target 1) (+ sp 4) b-offset input-data output-data :ok]
                     [(assoc input target 0) (+ sp 4) b-offset input-data output-data :ok])) 2 1] ;; equals
@@ -76,7 +77,7 @@
         b (int (mod (/ opcode 1000) 10))
         c (int (mod (/ opcode 10000) 10))
         [input sp relative-base in-data out-data status]  world
-        ;;bbb (println "opcode " opcode " first-param " first-param " relative-base: " relative-base)
+        ;; bbb (println "opcode " opcode " first-param " first-param " relative-base: " relative-base)
         ;; fix for authors' incompetence; we need no-output-params separated
         ;; as it is always read by value mode == 1 and not indirectly by mode == 0
         ;; and it is modified by mode 2 as well!!!
@@ -118,6 +119,9 @@
 
 (defn status [icode-result]
   (peek icode-result)) ;; get last element
+
+
+
 
 (defn out-params [icode-result] ;; TODO: rename!
   "this returns out params only"
