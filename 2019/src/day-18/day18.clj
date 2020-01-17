@@ -4,23 +4,25 @@
             [clojure.string :as str]
             [clojure.set :as set]))
 
+(use 'clojure.test)
+
 (load-file "../util/simple2D.clj")
 (clojure.core/alias 's2D 'util.simple2D)
 
 (def test-input
-"########################
+  "########################
 #...............b.C.D.f#
 #.######################
 #.....@.a.B.c.d.A.e.F.g#
 ########################") ;; 132 steps
 
 (def test-input-2
-"#########
+  "#########
 #b.A.@.a#
 #########") ;; 8 steps
 
 (def test-input-3
-"#################
+  "#################
 #i.G..c...e..H.p#
 ########.########
 #j.A..b...f..D.o#
@@ -31,7 +33,7 @@
 #################");; 136
 
 (def test-input-4
-"########################
+  "########################
 #@..............ac.GI.b#
 ###d#e#f################
 ###A#B#C################
@@ -41,7 +43,26 @@
 (def input (->> (slurp "input.txt")
                 (str/trim)))
 
-;;(def input test-input-3)
+;;(def input test-input-)
+
+;; (println input)
+
+(deftype visited-node [^int index ^java.util.Set keys-taken ^int steps]
+  Object
+  (equals [this other]
+    (and (= (.index this) (.index other))
+         (= (.keys-taken this) (.keys-taken other))))
+  (toString [this]
+    (str "<" (.index this) ", " (.keys-taken this) ", " (.steps this) ">"))
+  (hashCode [this]
+    (hash {:index (.index this) :keys-taken (.keys-taken this)}))
+  Comparable
+  (compareTo [this that]
+    (compare [(.index this) (.index this)]
+             [(.keys-taken that) (.keys-taken that)])))
+
+;; (visited-node. 4 #{})
+;; (.index )
 
 (defn get-xy-board [width]
   (fn [array x y]
@@ -63,26 +84,26 @@
 
 (def main-board (vec (board-map input)))
 
-(def get-xy (get-xy-board  (row-length input)))
+(def get-xy (get-xy-board (row-length input)))
 (def idx->coords (idx->coords-board (row-length input)))
 (def coords->idx (coords->idx-board (row-length input)))
 
 (comment
-(defn get-neighbourhood-board [coll]
-  (fn [[x y]]
+  (defn get-neighbourhood-board [coll]
+    (fn [[x y]]
+      [(get-xy coll (inc x) y)
+       (get-xy coll (dec x) y)
+       (get-xy coll x (inc y))
+       (get-xy coll x (dec y))]))
+
+  (defn get-neighbourhood [coll [x y]]
     [(get-xy coll (inc x) y)
      (get-xy coll (dec x) y)
      (get-xy coll x (inc y))
-     (get-xy coll x (dec y))]))
+     (get-xy coll x (dec y))])
 
-(defn get-neighbourhood [coll [x y]]
-  [(get-xy coll (inc x) y)
-   (get-xy coll (dec x) y)
-   (get-xy coll x (inc y))
-   (get-xy coll x (dec y))])
-
-(get-neighbourhood main-board [40 40])
-)
+  (get-neighbourhood main-board [40 40])
+  )
 
 (defn get-neighbourhood-coords [[x y]]
   [[(inc x) y]
@@ -92,29 +113,33 @@
 
 (defn find-char [coll character]
   (let [j-idx (.indexOf coll character)]
-    (if-let [idx (if (= -1 j-idx) nil j-idx)]
-      (idx->coords idx)
+    (if (not= -1 j-idx)
+      j-idx
       nil)))
 
-(defn create-distance-map [coll coords]
-  (assoc (second (reduce (fn [[idx coll] coord] [(inc idx) (assoc coll (idx->coords idx) 999999)]) [0 {}] coll))
-         coords 0))
+;; unused refactor and move to libs
+(comment
+  (defn create-distance-map [coll coords]
+    (assoc (second (reduce (fn [[idx coll] coord] [(inc idx) (assoc coll (idx->coords idx) 999999)]) [0 {}] coll))
+           coords 0))
 
-(defn distance-map [board passable? a] ;; TODO generalize to be used elsewhere use walls and board-passable, pass function and not list instead of walls
-  (loop [distances (create-distance-map board a)
-         to-search `(~a)]
-    (if (empty? to-search)
-      distances
-      (let [node (first to-search)
-            node-val (apply get-xy board node)
-            node-dst (get distances node)
-            neighbourhood-coords (if (passable? node-val) (get-neighbourhood-coords node) [])
-            [to-search distances] (reduce (fn [[to-search dsts] coord] (if (> (get dsts coord) (inc node-dst))
-                                                                         [(conj to-search coord) (assoc dsts coord (inc node-dst))]
-                                                                         [to-search dsts])) [(rest to-search) distances] neighbourhood-coords)
-            ]
-        (recur distances to-search)
-        ))))
+  (defn distance-map [board passable? a] ;; TODO generalize to be used elsewhere use walls and board-passable, pass function and not list instead of walls
+    (loop [distances (create-distance-map board a)
+           to-search `(~a)]
+      (if (empty? to-search)
+        distances
+        (let [node (first to-search)
+              node-val (apply get-xy board node)
+              node-dst (get distances node)
+              neighbourhood-coords (if (passable? node-val) (get-neighbourhood-coords node) [])
+              [to-search distances] (reduce (fn [[to-search dsts] coord] (if (> (get dsts coord) (inc node-dst))
+                                                                           [(conj to-search coord) (assoc dsts coord (inc node-dst))]
+                                                                           [to-search dsts])) [(rest to-search) distances] neighbourhood-coords)
+              ]
+          (recur distances to-search)
+          ))))
+
+  )
 
 (defn board-key? [character]
   (Character/isLowerCase character))
@@ -122,86 +147,77 @@
 (defn board-gate? [character]
   (Character/isUpperCase character))
 
-(defn board-passable? [character] ;; add found keys
-  (or (= \. character) (= \@ character)))
+(defn board-passable? [keys-taken character]
+  (or (= \. character) (= \@ character) (board-key? character)
+      (contains? keys-taken (Character/toLowerCase character))
+      ))
+
+(deftest board-passable-test
+  (is (= true (board-passable? #{} \.)))
+  (is (= true (board-passable? #{} \@)))
+  (is (= true (board-passable? #{} \a)))
+  (is (= false (board-passable? #{} \#)))
+  (is (= true (board-passable? #{\a} \A)))
+  (is (= true (board-passable? #{\f \z \a} \F)))
+  (is (= true (board-passable? #{\f \z \a} \F)))
+  (is (= false (board-passable? #{\z \a} \F)))
+  (is (= true (board-passable? #{\z \a} \a)))
+  (is (= false (board-passable? #{} \A))))
 
 (defn not-walls? [character]
   (not= \# character))
-
-(defn find-nearest-keys [board loc]
-  (loop [to-search `(~loc)
-         found '()
-         visited #{}
-         n 0]
-    (if (or (empty? to-search) (= n 10000))
-      found
-      (let [node (first to-search)
-            ;; ff (println "get-xy " (count board) node)
-            node-val (apply get-xy board node)
-            found (if (board-key? node-val) (conj found node-val) found)
-            neighbourhood-coords (if (board-passable? node-val) (get-neighbourhood-coords node) [])
-            to-search (reduce #(if (get visited %2) %1 (conj %1 %2)) (rest to-search) neighbourhood-coords)
-            visited (conj visited node)
-            ]
-        (recur to-search found visited (inc n)))
-      )))
 
 (defn assoc-if-idx-not-nil [coll idx val]
   (if-not (nil? idx)
     (assoc coll idx val)
     coll))
 
-(defn unlock-door [board key]
-  "removes both key & doar from board"
-  (let [key-pos (coords->idx (find-char board key))
-        door-idx (find-char board (char (- (int key) 32)))
-        door-pos (when door-idx (coords->idx door-idx))
-        ]
-    (-> board
-        (assoc-if-idx-not-nil key-pos \.)
-        (assoc-if-idx-not-nil door-pos \.))))
+(defn queue
+  ([] (clojure.lang.PersistentQueue/EMPTY))
+  ([coll]
+   (reduce conj clojure.lang.PersistentQueue/EMPTY coll)))
 
-(defn find-all-keys [board]
-  (reduce (fn [coll character] (if (or (= \@ character) (board-key? character)) (conj coll character) coll)) '() board))
-
-(defn compute-all-distance-maps-for-keys [board]
-  (let [keys  (find-all-keys board)]
-    (reduce (fn [coll key]
-              (let [key-coord (find-char board key)]
-                (assoc coll key (distance-map board not-walls? key-coord)))) {} keys)))
-
-(def ^:dynamic *minimum* [99999999 false] )
-
-(defn remove-all-doors [board character character-coord dst-maps dst-so-far]
-  (let [keys (find-nearest-keys board character-coord)
-        curr-distance-map (get dst-maps character)]
-    (if (or (empty? keys)
-            (> dst-so-far 4850))
-      (when (> (first *minimum*) dst-so-far)
-            (alter-var-root #'*minimum* (constantly [dst-so-far (empty? keys)] ))
-            )
-      (doseq [key keys]
-        (let [key-coord (find-char board key)
-              dst (get curr-distance-map key-coord)]
-          (remove-all-doors (unlock-door board key) key (find-char board key) dst-maps (+ dst-so-far dst))
-;;          (for [tail (remove-all-doors (unlock-door board key) key (find-char board key) dst-maps (+ dst-so-far dst))]
-            ;;(cons [key dst] tail)cider
-            )))))
+;;
+(defn add-key [board keys-coll idx]
+  "adds key if it is on idx"
+  (let [character (nth board idx)]
+    (if (board-key? character)
+      (conj keys-coll character)
+      keys-coll)))
 
 
+(defn count-all-keys [input]
+  (reduce (fn [sum character] (if (board-key? character)
+                                (inc sum)
+                                sum)) 0 input))
 
-(alter-var-root #'*minimum* (constantly [9999999999 0]) )
+;; (add-key main-board #{\c} 18)
+;; .index
+;; .keys-taken
+(defn solve-maze [input keys-count]
+  (loop [queue (queue `(~(visited-node. (find-char input \@) #{} 0)))
+         visited #{}
+         n 0]
+    (if (or (= keys-count (count (.keys_taken (peek queue)))) (empty? queue))
+      (peek queue)
+      (let [node (peek queue)
+            neighbours (map coords->idx (get-neighbourhood-coords (idx->coords (.index node))))
+            keys-taken (.keys-taken node)
+            passable (filter (comp (partial board-passable? keys-taken) (partial nth input)) neighbours)
+            new-visited (conj visited node)
+            new-nodes (map (fn [idx] (visited-node. idx (add-key input keys-taken idx) (inc (.steps node)))) passable)
+            new-nodes-filtered (filter #(not (contains? visited %1)) new-nodes)
+            new-queue (reduce #(conj %1 %2) queue new-nodes-filtered)]
 
-(remove-all-doors main-board \@ (find-char main-board \@) (compute-all-distance-maps-for-keys main-board) 0)
+        (recur (pop new-queue) new-visited (inc n))))))
 
+;; this runs several hours, possible optimizitaion
+;; 1. use bitset instead of set for storing foudn keys
+;; 2. remove multpile map/filter/reduce callsi in every step and replace it with
+;; single one
+;; 3. use mutable data structures
+(do
+  (println "Part 1: steps "
+           (.steps (solve-maze main-board (count-all-keys main-board)))))
 
-(println "Resutl 1: " *minimum*)
-;; 4702 not correct
-;; 4802 not correct
-;; 4952 not correct
-;; 4816 not correct
-(comment
- (println "Part 1: "
-          (->> (remove-all-doors main-board \@ (find-char main-board \@) (compute-all-distance-maps-for-keys main-board) 0)
-               (map (fn [coll] (reduce (fn [dst [k val]] (+ dst val)) 0 coll)) )
-               (apply min))))
+;; ==================================== PART 2 ====================================
