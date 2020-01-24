@@ -220,4 +220,105 @@
   (println "Part 1: steps "
            (.steps (solve-maze main-board (count-all-keys main-board)))))
 
-;; ==================================== PART 2 ====================================
+;; ==============================================================================
+;; ==================================== PART 2 ==================================
+;; ==============================================================================
+
+
+(defn modify-input [input idx]
+  "Change input maze accepted as input for part 2, returns [new-board start-postions] "
+  (let [[x y] (idx->coords idx)
+        to-change [[x y] [(inc x) y] [x (inc y)] [(dec x) y] [x (dec y)]]
+        new-start [[(inc x) (inc y)] [(dec x) (inc y)] [(dec x) (dec y)] [(inc x) (dec y)]]
+        new-input (reduce (fn [coll coords] (assoc coll (coords->idx coords) \#)) input to-change)
+        new-input (reduce (fn [coll coords] (assoc coll (coords->idx coords) \@)) new-input new-start)]
+
+    [new-input (map #(coords->idx %1) new-start)]))
+
+;; naive solution, just remove all doors that are not in quadrant, this won't work for e.g. this:
+;; ##############
+;; #@.........af#
+;; #B############
+;; #c#
+;; ###
+
+;; #####
+;; #@Ab#
+;; #####
+;; vs.
+;; #####
+;; #@.b#
+;; #####
+;;
+;; but it works for this input
+
+(do (println "START")
+    (map println
+         (partition 81 (first (modify-input main-board (find-char main-board \@))))))
+
+(defn find-all-keys-doors [input start-pos]
+  (loop [keys '()
+         doors '()
+         q (queue `(~start-pos))
+         visited (conj #{} start-pos)
+         n 0]
+    (if (or (empty? q) (> n 1030))
+      [keys doors visited]
+      (let [node (peek q)
+            character (nth input node)
+            new-keys (if (board-key? character) (conj keys character) keys)
+            new-doors (if (board-gate? character) (conj doors character) doors)
+            neighbours (map coords->idx (get-neighbourhood-coords (idx->coords node)))
+            passable (filter #(and (not (contains? visited %1))
+                                   ((comp not-walls? (partial nth input)) %1 )) (doall neighbours))
+            new-visited (reduce conj visited passable)
+            new-queue (reduce conj (pop q) passable)]
+
+        (recur new-keys new-doors new-queue new-visited (inc n))))))
+
+(do
+  (println "starting")
+  (println "========================================")
+  (find-all-keys-doors main-board 82))
+
+(def modified-board (first (modify-input main-board (find-char main-board \@))))
+
+(defn get-ignored-keys [input pos]
+  (let [[keys doors _] (find-all-keys-doors input pos)]
+    [(count keys) (set/difference (set doors) (set (map #(Character/toUpperCase %) keys))) pos]))
+
+(defn find-all-characters [input character]
+  (reduce (fn [[coll idx] i-char] (if (= i-char character)
+                                    [(conj coll idx) (inc idx)]
+                                    [coll (inc idx)]))
+          [[] 0]
+          input))
+
+(def input-positions
+  (first (find-all-characters modified-board \@)))
+
+(defn board-passable-and-ignored? [keys-taken ignored character]
+  (or (= \. character) (= \@ character) (board-key? character)
+      (contains? keys-taken (Character/toLowerCase character))
+      (contains? ignored character)))
+
+(defn solve-maze-2 [input keys-count ignore-doors input-idx]
+  (loop [queue (queue `(~(visited-node. input-idx #{} 0)))
+         visited #{}
+         n 0]
+    (if (or (= keys-count (count (.keys_taken (peek queue)))) (empty? queue))
+      (peek queue)
+      (let [node (peek queue)
+            neighbours (map coords->idx (get-neighbourhood-coords (idx->coords (.index node))))
+            keys-taken (.keys-taken node)
+            passable (filter (comp (partial board-passable-and-ignored? keys-taken ignore-doors) (partial nth input)) neighbours)
+            new-visited (conj visited node)
+            new-nodes (map (fn [idx] (visited-node. idx (add-key input keys-taken idx) (inc (.steps node)))) passable)
+            new-nodes-filtered (filter #(not (contains? visited %1)) new-nodes)
+            new-queue (reduce #(conj %1 %2) queue new-nodes-filtered)]
+
+        (recur (pop new-queue) new-visited (inc n))))))
+
+(println "Part 2: "
+         (let [parts (map #(get-ignored-keys modified-board %) input-positions)]
+           (reduce + (map (fn [[keys-count ignore-doors input-idx]] (.steps (solve-maze-2 modified-board keys-count ignore-doors input-idx))) parts))))
