@@ -1,11 +1,14 @@
+* Clojure Advent Of Code
 
-;; Optimization hints
-;; https://www.youtube.com/watch?v=TW1ie0pIO_E
-;; use multiple arity functions instead of variadic ones
-;; do not use partial
-;; use (seq []) instead of (empty? [])
-;; keywoard equality (= :a :a) bad; (keyword-identical? :a :a) better
-;; runtime polymorphism
+** Optimization hints
+https://www.youtube.com/watch?v=TW1ie0pIO_E
+
+- use multiple arity functions instead of variadic ones
+- do not use partial
+- use (seq []) instead of (empty? [])
+- keywoard equality (= :a :a) bad; (keyword-identical? :a :a) better
+
+*** runtime polymorphism
 ;; bad
 ;; (defmulti foo (fn [& args] ...))
 ;; Good, but less elegant use cond or condp or manualy dispatch
