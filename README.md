@@ -1,45 +1,59 @@
 
-;; Optimization hints
-;; https://www.youtube.com/watch?v=TW1ie0pIO_E
-;; use multiple arity functions instead of variadic ones
-;; do not use partial
-;; use (seq []) instead of (empty? [])
-;; keywoard equality (= :a :a) bad; (keyword-identical? :a :a) better
-;; runtime polymorphism
-;; bad
-;; (defmulti foo (fn [& args] ...))
-;; Good, but less elegant use cond or condp or manualy dispatch
-;; (condp = x
-;; ... )
-;; Fastest??
-;; (defprotocol Fooable
-;;   (foo [this x]))
-;; (deftype Thing
-;;   Fooable
-;;   (foo [this x]...))
-;; multimethods too slow for tihgt loops
-;; condp complies to conditional that can be optimized
-;; protocols and types are fastest but static
-;; tradeoff between dynamic code vs. speed
-;;
-;; if function is used multiple times with same result just def it
-;; (defn foo [x]
-;;   (conj (range 10) x))
-;; good skip extra calls
-;; (def numbers (range 10))
-;; (defn foo [x]
-;;   (conj numbers x))
-;;
-;; use array when you need to fastly append items into collection (mutable)
+# Clojure Advent Of Code
 
-;; Lazyness
-;; cljoure have lazy seqs map/for/concat/filter
-;; game code is eager and inputs are finite we do not care about lazyness
-;; Favor reduce over map
-;; Write own for-loop that does not use lazy-seq to accumulate results
-;; lazy seqs have GC impact
-;;
-;; Avoid intermediat collections
+## Optimization hints
+https://www.youtube.com/watch?v=TW1ie0pIO_E
+
+-- functions
+- use multiple arity functions instead of variadic ones
+- do not use partial
+- use (seq []) instead of (empty? [])
+- keywoard equality (= :a :a) bad; (keyword-identical? :a :a) better
+
+-- runtime polymorphism
+- bad
+ ```clojure 
+ (defmulti foo (fn [& args] ...))
+ ```
+- Good, but less elegant use cond or condp or manualy dispatch
+```clojure 
+(condp = x
+ ... )
+ ```
+- Fastest??
+```clojure
+ (defprotocol Fooable
+   (foo [this x]))
+ (deftype Thing
+   Fooable
+   (foo [this x]...))
+```
+- multimethods too slow for tight loops
+- condp complies to conditional that can be optimized
+- protocols and types are fastest but static
+- tradeoff between dynamic code vs. speed
+
+- if function is used multiple times with same result just def it
+```clojure
+ (defn foo [x]
+   (conj (range 10) x))
+```
+- good skip extra calls
+ ```clojure
+ (def numbers (range 10))
+ (defn foo [x]
+   (conj numbers x))
+```
+- use array when you need to fastly append items into collection (mutable)
+
+-- Lazyness
+- clojure have lazy seqs map/for/concat/filter
+- game code is eager and inputs are finite we do not care about lazyness
+- Favor reduce over map
+- Write own for-loop that does not use lazy-seq to accumulate results
+- lazy seqs have GC impact
+
+- Avoid intermediat collections
 ;;
 ;;
 ;; Bad, procedurally building up multiple collections
