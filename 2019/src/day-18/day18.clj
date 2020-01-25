@@ -318,7 +318,10 @@
             new-queue (reduce #(conj %1 %2) queue new-nodes-filtered)]
 
         (recur (pop new-queue) new-visited (inc n))))))
+(time
+ (println "Part 2: "
+          (let [parts (map #(get-ignored-keys modified-board %) input-positions)]
+            (reduce + (map (fn [[keys-count ignore-doors input-idx]] (.steps (solve-maze-2 modified-board keys-count ignore-doors input-idx))) parts)))))
 
-(println "Part 2: "
-         (let [parts (map #(get-ignored-keys modified-board %) input-positions)]
-           (reduce + (map (fn [[keys-count ignore-doors input-idx]] (.steps (solve-maze-2 modified-board keys-count ignore-doors input-idx))) parts))))
+;; Part 2:  1692
+;; "Elapsed time: 561.545955 msecs"

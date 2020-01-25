@@ -38,7 +38,7 @@
 
 
 (defn create-line-equation [A B]
-  "equation form is ax + b = c"
+  "equation form is ax + by = c"
   (let [a (- (:y B) (:y A))
         b (- (:x A) (:x B))
         c (+ (* a (:x A)) (* b (:y A)))]

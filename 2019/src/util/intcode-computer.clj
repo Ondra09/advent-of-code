@@ -121,14 +121,12 @@
   (peek icode-result)) ;; get last element
 
 
-
-
 (defn out-params [icode-result] ;; TODO: rename!
   "this returns out params only"
   (nth icode-result 4))
 
 (defn out-params->in-params [icode-result] ;; TODO: or rename this
-  "Transforms output params to input, so it can be used as new input"
+  "Transforms output params to input, so it can be used as a new input"
   (pop (pop icode-result))) ;; result is vector
 
 (defn assoc-output [machine output];; TODO: rename to input!
