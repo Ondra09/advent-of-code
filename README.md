@@ -86,6 +86,7 @@ https://www.youtube.com/watch?v=TW1ie0pIO_E
 
 - Use loop instead of for or into with transients or arrays as the accumulator
 - Avoid boxing and unboxing i.e multiple maps/fors over a collection, use transducers, reducers or loops
+-- https://medium.com/formcept/performance-optimization-in-clojure-using-reducers-and-transducers-a-formcept-exclusive-375955673547
 - Don't make multiple calls to get the same data, put it in a let
 - Avoid heavily nested closures as the lookup tree becomes very long and slow
 - Favor eager operations over lazy operations i.e reduce instead of for or map
