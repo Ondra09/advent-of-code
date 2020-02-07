@@ -145,3 +145,112 @@
       (/ (* a b) (gcd a b)))
 ;; to calculate the lcm for a variable number of arguments
 (defn lcmv [& v] (reduce lcm v))
+
+
+;;;;;;;;;;;;;;;;;;
+(def infinity Long/MAX_VALUE)
+
+(defn dijkstra [dst-table starting-node]
+  (loop [to-visit #{starting-node}
+         computed-dists (transient {starting-node 0})
+         visited #{}]
+    (if  (not (seq to-visit))
+      (persistent! computed-dists)
+      (let [current-node (first to-visit)
+            new-visited (conj visited current-node)
+            dsts (get dst-table current-node)
+            curr-dst-to-node (get computed-dists current-node infinity)
+            [new-computed-dists new-to-visit] (reduce (fn [[coll to-visit-coll] [k v]]
+                                                        (let [curr-val (get coll k infinity)]
+                                                          (if (or (> curr-val (+ curr-dst-to-node v)))
+                                                            (do
+                                                              [(assoc! coll k (+ curr-dst-to-node v))
+                                                               (conj to-visit-coll k)])
+                                                            [coll to-visit-coll]))) [computed-dists (rest to-visit)] dsts)]
+
+
+        (recur new-to-visit new-computed-dists new-visited)))))
+
+(deftest dijkstra-test
+  (let [dst-table {:a {:b 2 :c 150}
+                   :b {:a 2 :c 3}
+                   :c {:b 3}}
+        dst-table-2 {:a {:b 2 :c 1}
+                     :b {:a 2 :c 7 :d 78}
+                     :c {:a 1 :b 7 :d 2}
+                     :d {:b 6 :c 2}}
+        dst-table-3 {:a {:b 5 :bb 1}
+                     :b {:c 2}
+                     :bb {:c 1}
+                     :c {:d 2}
+                     :d {:e 1}}
+        dst-table-4 {:SC {:SC 0, :KQ 53, :IJ 61},
+                     :ZZ {:ZZ 0, :MV 5, :AC 47},
+                     :JL {:JL 0, :FW 5, :YM 49, :UJ 53, :JQ 51},
+                     :MF {:MF 0, :FW 61, :XQ 65},
+                     :SJ {:SJ 0, :SD 73, :UI 51},
+                     :UJ {:UJ 0, :YM 7, :JL 53, :FW 55, :UI 49},
+                     :AC {:AC 0, :YJ 55, :MV 45, :ZZ 47},
+                     :JA {:JA 0, :SD 53, :OY 37},
+                     :OY {:OY 0, :YT 47, :JA 37},
+                     :YM {:YM 0, :UJ 7, :JL 49, :FW 51, :LE 43},
+                     :YL {:YL 0, :LE 81, :AA 53, :UX 57},
+                     :LE {:LE 0, :YM 43, :YL 81},
+                     :RA {:RA 0, :YJ 39, :NC 55},
+                     :SD {:SD 0, :SJ 73, :JA 53},
+                     :YJ {:YJ 0, :RA 39, :AC 55},
+                     :ZB {:ZB 0, :UX 49, :XQ 51},
+                     :IJ {:IJ 0, :PS 45, :SC 61},
+                     :PS {:PS 0, :IJ 45, :MV 37},
+                     :FW {:FW 0, :MF 61, :JL 5, :YM 51, :UJ 55},
+                     :AA {:AA 0, :UX 7, :YL 53},
+                     :JQ {:JQ 0, :JL 51, :KQ 49},
+                     :XQ {:XQ 0, :MF 65, :ZB 51},
+                     :ND {:ND 0, :NC 59, :YT 61},
+                     :MV {:MV 0, :PS 37, :ZZ 5, :AC 45},
+                     :UX {:UX 0, :ZB 49, :AA 7, :YL 57},
+                     :NC {:NC 0, :ND 59, :RA 55},
+                     :YT {:YT 0, :ND 61, :OY 47},
+                     :KQ {:KQ 0, :SC 53, :JQ 49},
+                     :UI {:UI 0, :SJ 51, :UJ 49}}]
+
+    (is (= (dijkstra dst-table :a) {:a 0 :b 2 :c 5}))
+    (is (= (dijkstra dst-table :b) {:a 2 :b 0 :c 3}))
+    (is (= (dijkstra dst-table :c) {:a 5 :b 3 :c 0}))
+
+    (is (= (dijkstra dst-table-2 :a) {:a 0 :b 2 :c 1 :d 3}))
+    (is (= (dijkstra dst-table-2 :c) {:a 1 :b 3 :c 0 :d 2}))
+
+    (is (= (dijkstra dst-table-3 :a) {:a 0 :b 5 :bb 1 :c 2 :d 4}))
+    (is (= (dijkstra dst-table-3 :bb) {:bb 0 :c 1 :d 3}))
+    (is (= (get (dijkstra dst-table-4 :AA) :ZZ) 527))))
+
+
+;;;;;;;;;;;;;;;;;; 2d array manip ;;;;;;;;;;;;;;;;;;;;;;;;;
+(deftype Board [^int line-length ^int lines  data])
+
+(defn coords->idx [^Board board x y]
+  (+ x (* (.line-length board) y)))
+
+(defn idx->coords [^Board board idx]
+  [(int (mod idx (.line-length board))) (int (/ idx (.line-length board)))])
+
+(defn in-board? [^Board board x y]
+  (and (>= x 0) (< x (.line-length board))
+       (>= y 0) (< y (.lines board))))
+
+(defn get-xy-unchecked [^Board board x y]
+  (nth (.data board) (coords->idx board x y)))
+
+
+(defn get-xy [^Board board x y]
+  (when (in-board? board x y)
+    (get-xy-unchecked board x y)))
+
+;; gets neighbours, TODO: abstract function that gets neigbours to be able to change
+;; how it is obtained. This gets cross neighbours
+;; (defn get-neighbourhood [^Board board x y]
+;;   [(inc x) y
+;;    (dec x) y
+;;    x (inc y)
+;;    x (dec y)])
