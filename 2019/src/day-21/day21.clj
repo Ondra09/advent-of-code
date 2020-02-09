@@ -49,10 +49,8 @@
                 "NOT C T"
                 "OR T J"
                 "AND D J" ;; same until now
-                "NOT H T" ;; try and error solution
-                "NOT T T"
-                "AND T J"
-                "NOT A T"
+                "AND H J" ;; not jumping if we can't jump next time
+                "NOT A T" ;; always jump when A is a hole
                 "OR T J"
                 "RUN"])
 
