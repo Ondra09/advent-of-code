@@ -54,39 +54,43 @@ https://www.youtube.com/watch?v=TW1ie0pIO_E
 - lazy seqs have GC impact
 
 - Avoid intermediat collections
-;;
-;;
-;; Bad, procedurally building up multiple collections
-;; (let [v1 (map inc numbers)
-;;       v2 (filter pos? v1)
-;;       v3 (map #(* 2 %) v2)]
-;;   (into {} (map #(vector % (inc %)) v3)))
 
-;; Good, do it all in one shot using transients
-;; (loop [nums numbers
-;;        accum (transient {})]
-;;   (let [n (first numbers) ]
-;;     (if n
-;;       (recur (rest nums) (assoc! accum n (inc n)))
-;;       (persisten! accum)
-;;       )))
-;; or use java/java-script array
-;;
-;; GC is quite good in JS engines 7-10% time
-;; use typehint ^boolean
-;; Use arrays and transient
-;; advanced compiler options
-;;   :static-fns
-;;   :elide-assert
-;;
-;; use Interop with the host environment if needed
-;;
-;; Use loop instead of for or into with transients or arrays as the accumulator
-;; Avoid boxing and unboxing i.e multiple maps/fors over a collection, use transducers, reducers or loops
-;; Don't make multiple calls to get the same data, put it in a let
-;; Avoid heavily nested closures as the lookup tree becomes very long and slow
-;; Favor eager operations over lazy operations i.e reduce instead of for or map
-;; Don't use concat or mapcat as they can be slow and generate lots of garbage
-;; Don't use last as it will need to traverse the whole sequence, use nth instead if you know how many elements are in the collection
-;; Don't use hashmaps as functions ({:a 1} :a), instead use get or keywords as functions
-;; Always return the same type from a function (V8 can then optimize it)
+
+- Bad, procedurally building up multiple collections
+```clojure
+(let [v1 (map inc numbers)
+      v2 (filter pos? v1)
+      v3 (map #(* 2 %) v2)]
+   (into {} (map #(vector % (inc %)) v3)))
+```
+
+- Good, do it all in one shot using transients
+```clojure
+(loop [nums numbers
+       accum (transient {})]
+  (let [n (first numbers) ]
+    (if n
+      (recur (rest nums) (assoc! accum n (inc n)))
+      (persisten! accum))))
+```
+- or use java/java-script array
+
+-- GC is quite good in JS engines 7-10% time
+- use typehint ^boolean
+- Use arrays and transient
+- advanced compiler options
+-   :static-fns
+-   :elide-assert
+
+- use Interop with the host environment if needed
+
+- Use loop instead of for or into with transients or arrays as the accumulator
+- Avoid boxing and unboxing i.e multiple maps/fors over a collection, use transducers, reducers or loops
+-- https://medium.com/formcept/performance-optimization-in-clojure-using-reducers-and-transducers-a-formcept-exclusive-375955673547
+- Don't make multiple calls to get the same data, put it in a let
+- Avoid heavily nested closures as the lookup tree becomes very long and slow
+- Favor eager operations over lazy operations i.e reduce instead of for or map
+- Don't use concat or mapcat as they can be slow and generate lots of garbage
+- Don't use last as it will need to traverse the whole sequence, use nth instead if you know how many elements are in the collection
+- Don't use hashmaps as functions ({:a 1} :a), instead use get or keywords as functions
+- Always return the same type from a function (V8 can then optimize it)
