@@ -112,7 +112,7 @@
           ;;aa (println  "sp: " new-sp "base" new-base-offset " in-data: " new-in-data " out-data: " new-out-data" status: " status)
           ]
       (cond
-        (> iter 500000) :failure
+        (> iter 5000000) :failure-iter-stop
         (not=  status :ok) [new-input new-sp new-base-offset new-in-data new-out-data status]
         :else (recur [new-input new-sp new-base-offset new-in-data new-out-data] (inc iter))
         ))))
@@ -131,6 +131,13 @@
 
 (defn assoc-output [machine output];; TODO: rename to input!
   (assoc machine 3 output))
+
+(defn ascii->intcode [ascii]
+  "also appends newline at the end"
+  (concat (map #(int %) ascii) '(10)))
+
+(defn intcode->ascii [intcode]
+  (map #(char %) intcode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; UTIL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn permutation
