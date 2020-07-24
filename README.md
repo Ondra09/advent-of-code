@@ -12,11 +12,11 @@ https://www.youtube.com/watch?v=TW1ie0pIO_E
 
 -- runtime polymorphism
 - bad
- ```clojure 
+ ```clojure
  (defmulti foo (fn [& args] ...))
  ```
 - Good, but less elegant use cond or condp or manualy dispatch
-```clojure 
+```clojure
 (condp = x
  ... )
  ```
@@ -94,3 +94,6 @@ https://www.youtube.com/watch?v=TW1ie0pIO_E
 - Don't use last as it will need to traverse the whole sequence, use nth instead if you know how many elements are in the collection
 - Don't use hashmaps as functions ({:a 1} :a), instead use get or keywords as functions
 - Always return the same type from a function (V8 can then optimize it)
+
+# Algorithms implementatio
+https://rosettacode.org/wiki
