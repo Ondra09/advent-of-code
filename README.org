@@ -1,0 +1,2 @@
+* Advent of Code Solution
+[[https://adventofcode.com]]
