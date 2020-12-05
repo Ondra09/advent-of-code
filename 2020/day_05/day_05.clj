@@ -43,7 +43,6 @@
 (println "Part 1 result: "
          (apply max seat-ids))
 
-;; this is not functional at all
 (defn find-missing-in-row [col]
   (reduce (fn [[acc result] val]
             (if (= (inc acc) val)
