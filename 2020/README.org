@@ -1,0 +1,3 @@
+* 2020
+Code is written in =Clojure=. All files are written as a script, that can be run directly from command line by calling them.
+To run them, you need to have installed [[https://github.com/borkdude/babashka][Babashka]] 2020 Clojure interpreter.
