@@ -3,25 +3,13 @@
 ;; https://adventofcode.com/2020/day/2
 
 (defn split-input [s]
-  (str/split s #"\n"))
+  (str/split s #"\n\n"))
 
 (defn parse-input [line]
-  (re-matches #"(\d+)\-(\d+) (\w)\: (\w+)" line))
-
-(defn get-low [col]
-  (Integer/parseInt(nth col 1)))
-
-(defn get-high [col]
-  (Integer/parseInt(nth col 2)))
-
-(defn get-char [col]
-  (char (first (.getBytes (nth col 3)))))
-
-(defn get-password [col]
-  (nth col 4))
+  (map #(set (seq (char-array %))) (str/split line #"\n")))
 
 (defn modify-input [col]
-  [(get-low col) (get-high col) (get-char col) (get-password col)])
+  col)
 
 (def input (->> (slurp "input")
                 (str/trim)
@@ -29,29 +17,12 @@
                 (map #(parse-input %))
                 (map #(modify-input %))))
 
+(defn merge-groups [col]
+  (reduce (fn [acc val] (concat acc val))  col))
 
+(defn part-1 [input fun]
+  (apply + (map #(count (apply fun %)) input)))
 
-(defn validate-password [lower upper char password]
-  (let [freq (frequencies password)]
-    (and
-     (not (nil? (get freq char)))
-     (>= (get freq char) lower)
-     (<= (get freq char) upper))))
+(println "Part 1 result: " (part-1 input clojure.set/union))
+(println "Part 1 result: " (part-1 input clojure.set/intersection))
 
-(def valid-passwords (filter #(apply validate-password %) input))
-
-(println "Number of valid passwords: " (count valid-passwords))
-
-(defn korp-get [col idx]
-  (get col (dec idx)))
-
-(defn bool-to-int [val]
-  (get { false 0 true 1 } val))
-
-(defn validate-password-2 [lower upper char password]
-  (= 1 (+ (bool-to-int (= char (korp-get password lower)))
-          (bool-to-int (= char (korp-get password upper))))))
-
-(def valid-passwords-2 (filter #(apply validate-password-2 %) input))
-
-(println "Number of valid passwords: " (count valid-passwords-2))
