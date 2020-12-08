@@ -25,8 +25,6 @@
 (defn incrase-state [state key amount]
   (assoc state key (+ amount (state key))))
 
-
-
 (def instruction-table {"nop" (fn [state amount] (incrase-state state :ip 1)),
                         "acc" (fn [state amount] (incrase-state (incrase-state state :acc amount) :ip 1)),
                         "jmp" (fn [state amount] (incrase-state state :ip amount))
@@ -61,8 +59,7 @@
   (assoc state :prog (flip-nop-jmp (state :prog) line)))
 
 (println "Part 1 result: " ((simulate machine-state) :acc))
-;(println "Part 2 result: " 0)
-;
+
 (def all-programs (map (fn [line] (flip-state machine-state line)) (range (count input))))
 
 (println "Part 2 result: " ((some (fn [state] (when (= (state :ip) (count input)) state)) (map #(simulate %) all-programs)) :acc))
