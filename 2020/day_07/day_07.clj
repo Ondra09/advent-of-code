@@ -10,10 +10,13 @@
 
 (defn parse-input [line]
   (let [[_ name items] (re-matches #"([ \w]+) bags contain (.*)" line)
-        children (re-seq #"(\d) ([ \w]+) bag" items)]
-    {name children}))
+        children (re-seq #"(\d+) ([ \w]+) bag" items)]
+    {name (->> children
+               (map (fn [[_ val child-name]] {child-name (read-string val)}))
+               (into {})
+               )}))
 
-(def input (->> (slurp "input-test")
+(def input (->> (slurp "input")
                 (str/trim)
                 (split-input)
                 (map #(parse-input %))
@@ -32,16 +35,18 @@
       parent-names
       (let [parents (get-parents nodes (first stack))
             new-stack (into (rest stack) parents)
-            new-parent-names (into parent-names parents)
-            ]
+            new-parent-names (into parent-names parents)]
         (recur new-stack new-parent-names)))))
 
-(defn find-all-bags [nodes node-name]
-  (loop [stack `(~node-name)
-         sum 0]))
-input
-;(println "Part 1 result: " (count (find-all-parents input "shiny gold")))
-;(println "Part 2 result: " 1)
+(defn sum-all-bags [nodes node-name]
+    (let [children (nodes node-name)]
+      (if (empty? children)
+        0
+        (apply + (map (fn [[k v]] (* v (inc (sum-all-bags nodes k)))) children)))))
+
+(println "Part 1 result: " (count (find-all-parents input "shiny gold")))
+(println "Part 2 result: " (sum-all-bags input "shiny gold"))
+
 ;;;;;;;;;;;;;;;;;;;;;; TESTS
 ;; (deftest is-valid?
 ;;   (is (= 5 5)))
@@ -50,10 +55,3 @@ input
 ;;   (is-valid?))
 
 ; (run-tests)
-; (filter #(is-child? % "shiny gold") input)
-
-; ((hash-map "abc" "aaa") "abc")
-; (find-all-parents input "shiny gold")
-
-;input
-;(find-all-parents input "shiny gold")
