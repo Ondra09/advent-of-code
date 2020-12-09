@@ -1,0 +1,71 @@
+#!/usr/local/bin/bb
+
+(ns main
+  (:require [clojure.test :refer [deftest is]]
+            [clojure.string :as str]))
+;; https://adventofcode.com/2020/day/8
+
+(defn split-input [s]
+  (str/split s #"\n"))
+
+(defn parse-input [line]
+  (read-string line))
+
+(def input (->> (slurp "input-test")
+                (str/trim)
+                (split-input)
+                (map #(parse-input %))
+                (vec)))
+
+
+(defn find-twos [input result]
+  (for [[idx x] (map-indexed vector input)
+        idx-y (range (inc idx))
+        :let [y (nth input idx-y)]
+        :when (= (+ x y) result)]
+    (do
+      ;(println x " " y)
+      [x y])))
+
+
+(defn check-sequence [coll prefix shift]
+  (not (empty? (find-twos (take prefix (drop shift coll)) (nth coll (+ prefix shift))))))
+
+(defn find-invalid [coll prefix]
+  (nth coll
+       (+ prefix (first (filter #(not(check-sequence coll prefix %)) (range (- (count input) prefix)))))))
+
+(defn sum-numbers-up-to [coll max]
+  (reduce (fn [[sum idx] num] (if (>= sum max) (reduced [sum idx]) [(+ sum num) (inc idx)])) [0 0] coll))
+
+(defn find-subset-equal-to-sum [coll sum]
+  (first (filter (fn [idx] (= sum (first (sum-numbers-up-to (drop idx coll) sum))))
+          (range (count coll)))))
+
+(def part-1 (find-invalid input 5))
+
+(println "Part 1 result: " part-1)
+(println "Part 2 result: " 1)
+
+(find-subset-equal-to-sum input part-1)
+
+
+;(sum-numbers-up-to (drop 529 input) part-1)
+;; (def rr (second (sum-numbers-up-to (drop 2 input) part-1)))
+
+;; (def result-range (take rr (drop 2 input)))
+
+;; (def min (apply min (take rr (drop 2 input))))
+;; (def max (apply max (take rr (drop 2 input))))
+
+;; (+ min max)
+
+
+;;;;;;;;;;;;;;;;;;;;;; TESTS
+;; (deftest is-valid?
+;;   (is (= 5 5)))
+
+;; (defn run-tests []
+;;   (is-valid?))
+
+; (run-tests)
