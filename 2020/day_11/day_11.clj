@@ -11,7 +11,7 @@
   (str/split s #"\n"))
 
 (defn parse-input [line]
-  line)
+  (vec (char-array line)))
 
 (def input (->> (slurp "input-test")
                 (str/trim)
@@ -20,33 +20,33 @@
                 ))
 
 
-;; ----> X
+;; ----> Y
 ;; |
 ;; |
 ;; v
-;; Y
-
-(defn get-in-str [coll x y]
-  (get (get coll y) x))
+;; X
 
 (def eight-neigbour [[-1 -1] [0 -1] [1 -1]
                      [-1 0] [1 0]
                      [-1 1] [0 1] [1 1]])
 
 (defn count-neighbors [coll x y value]
-  (reduce (fn [acc [dx dy]] (if (= value (get-in-str coll (+ dx x) (+ dy y)))
-                              (do (println "dx "dx " " dy " " acc " val " value " getin " (get-in-str coll (+ dx x) (+ dy y))) (inc acc))
-                              (do (println "dx "dx " " dy " " acc " val " value " getin " (get-in-str coll (+ dx x) (+ dy y))) 0))) 0 eight-neigbour))
+  (reduce (fn [acc [dx dy]] (if (= value (get-in coll [(+ dx x) (+ dy y)]))
+                              (inc acc)
+                              acc)) 0 eight-neigbour))
 
-(println "Part 1 result: " 1)
-(println "Part 2 result: " 1)
-input
+;(defn simulate [input]
+;  (let [occupied (count-neighbors input 0 0 )]))
 
-(println "> " (get-in-str input 2 2))
+(def a (for [j (range (count input))
+      i (range (count (first input)))]
+  (count-neighbors input i j \L))
+)
 
-(println (count-neighbors input 1 1 \L))
+;(println "Part 1 result: " 1)
+;(println "Part 2 result: " 1)
 
-input
+;input
 
 
 
