@@ -13,7 +13,7 @@
 (defn parse-input [line]
   (vec (char-array line)))
 
-(def input (->> (slurp "input-test")
+(def input (->> (slurp "input")
                 (str/trim)
                 (split-input)
                 (mapv #(parse-input %))
@@ -30,24 +30,64 @@
                      [-1 0] [1 0]
                      [-1 1] [0 1] [1 1]])
 
-(defn count-neighbors [coll x y value]
-  (reduce (fn [acc [dx dy]] (if (= value (get-in coll [(+ dx x) (+ dy y)]))
-                              (inc acc)
-                              acc)) 0 eight-neigbour))
+(defn count-neighbors [coll x y value neighbours it]
+  (reduce (fn [{:keys [dirs sum]} [dx dy]]
+            (let [tile (get-in coll [(+ (* it dx) x) (+ (* it dy) y)])]
+              (if (or (= nil tile)
+                      (= \L tile)
+                      (= value tile))
+                {:dirs (conj dirs [dx dy]) :sum (if (or (= tile \L) (= tile nil)) sum (inc sum))}
+                {:dirs dirs :sum sum })))
+          {:dirs [] :sum 0} neighbours))
 
-;(defn simulate [input]
-;  (let [occupied (count-neighbors input 0 0 )]))
+(defn count-neighbors-one [coll x y value]
+  (count-neighbors coll x y value eight-neigbour 1))
 
-(def a (for [j (range (count input))
-      i (range (count (first input)))]
-  (count-neighbors input i j \L))
-)
+(defn count-line-neighbors [coll x y value]
+  (loop [neighbours eight-neigbour
+         sum-all 0
+         it 1]
+    (if (> (count neighbours) 0)
+      (let [{:keys [dirs sum]} (count-neighbors coll x y value neighbours it)]
+        (recur (filterv (complement (into #{} dirs)) neighbours) (+ sum sum-all) (inc it))
+        )
+      {:dirs [] :sum sum-all})))
 
-;(println "Part 1 result: " 1)
-;(println "Part 2 result: " 1)
+(defn tile-changing-to [tile occupied-neigh-count occupied-max]
+  (cond (and (= \# tile) (>= occupied-neigh-count occupied-max)) \L
+        (and (= \L tile) (= occupied-neigh-count 0)) \#
+        :else false
+  ))
 
-;input
+(defn find-changes [input neighbourhood-fun occupied-max]
+  (for [j (range (count input))
+        i (range (count (first input)))
+        :let [myself (get-in input [j i])
+              occupied-neigh-count ((neighbourhood-fun input j i \#) :sum)
+              changing-to (tile-changing-to myself occupied-neigh-count occupied-max)]
+        :when changing-to]
+    {:x j :y i :val changing-to}))
 
+
+(defn simulate [input neighbourhood-fun occupied-max]
+  (loop [input input]
+    (let [changes (find-changes input neighbourhood-fun occupied-max)]
+      (if (> (count changes) 0)
+        (recur (reduce (fn [coll {:keys [x y val]}] (assoc-in coll [x y] val)) input (find-changes input neighbourhood-fun occupied-max)))
+        input
+        ))))
+
+
+(defn sum-occupied [input]
+  ((frequencies (flatten input)) \#))
+
+(def stable (simulate input count-neighbors-one 4))
+(def stable-2 (simulate input count-line-neighbors 5))
+
+(println "Part 1 result: " (sum-occupied stable))
+(println "Part 2 result: " (sum-occupied stable-2))
+
+(count-line-neighbors input 3 3 \L)
 
 
 ;;;;;;;;;;;;;;;;;;;;;; TESTS
