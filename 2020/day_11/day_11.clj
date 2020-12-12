@@ -87,7 +87,6 @@
 (println "Part 1 result: " (sum-occupied stable))
 (println "Part 2 result: " (sum-occupied stable-2))
 
-(count-line-neighbors input 3 3 \L)
 
 
 ;;;;;;;;;;;;;;;;;;;;;; TESTS
