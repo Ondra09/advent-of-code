@@ -24,8 +24,6 @@
 
 (def input (parse-input input-raw))
 
-
-
 ;; https://rosettacode.org/wiki/Modular_inverse#Clojure
 (defn extended-gcd
   "The extended Euclidean algorithm--using Clojure code from RosettaCode for Extended Eucliean
@@ -78,8 +76,6 @@
 
 
 (println "Part 1 result: " part-1)
-(println "Part 2 result: " 1)
-
 
 (def bus-idx (reduce (fn [[val-coll remainder-coll] bus]
                        (if (number? bus)
@@ -91,9 +87,13 @@
 ; (println "Test 1 (3417): " (chinese-remainder [17 13 19] [0  11 16]))
 ; (println "Test 2 (1202161486): " (chinese-remainder [1789 37 47 1889] [0  36 45 1886]))
 
-(println (apply chinese-remainder bus-idx))
-;; not right 599534645305388 
+;; not right 599534645305388
+;; correct 305068317272992
 (println "Part 2 result: " (apply chinese-remainder bus-idx))
+
+;; implementation of chinese theorem from roseta code is not working correclty
+;; so I put numbers and remaindes from bus-idx list by hand to form on this
+;; page https://www.dcode.fr/chinese-remainder
 
 ;;;;;;;;;;;;;;;;;;;;;; TESTS
 ;; (deftest is-valid?
