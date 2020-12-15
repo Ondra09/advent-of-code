@@ -22,7 +22,7 @@
 (defn parse-mem [line]
   (let [[_ idx val] (re-matches #"mem\[(\d+)\] = (\d+)" line)]
     {:type :mem
-     :val {:idx idx
+     :val {:idx (num->binary-str (read-string idx))
            :val (num->binary-str (read-string val))}}))
 
 (defn parse-input [line]
@@ -47,12 +47,31 @@
                (reverse (fill-zeros target (- (count mask) (count target))))
                (reverse mask)))))
 
+(defn mask-number-pt2 [target mask]
+  (apply str (reverse
+              (mapv
+               (fn [t m] (if (not= m \0) m t))
+               (reverse (fill-zeros target (- (count mask) (count target))))
+               (reverse mask)))))
+
+(defn first-or-zero [s]
+  (let [val (first s)]
+    (if (nil? val) \0 val)))
+
+(defn replace-eXs [mask val]
+  (let [binval (num->binary-str val)]
+    (first (reduce
+            (fn [[result binval] c]
+              (if (= c \X) [(str result (first-or-zero binval)) (rest binval)]
+                  [(str result c) binval]))
+            ["" (reverse binval)]
+            mask))))
+
 (defn generate-floating-combinations [mask]
   (let [freq (frequencies mask)]
-    (map-indexed
-     (fn [idx c] (cond (= c \X) \1
-                   :else c))
-     (repeat (freq \X) mask))))
+    (map
+     (fn [variant] (replace-eXs mask variant))
+     (range (Math/pow 2 (freq \X))))))
 
 (defn compute-part-1 [input]
   (reduce (fn [{:keys [mem m0]} {:keys [type val]}]
@@ -62,11 +81,20 @@
            :m0 ""}
           input))
 
+(defn compute-part-2 [input]
+  (reduce (fn [{:keys [mem m0]} {:keys [type val]}]
+            (cond (= type :mask) {:mem mem :m0 val}
+                  (= type :mem) {:mem (reduce #(assoc %1 %2 (val :val)) mem (generate-floating-combinations (mask-number-pt2 (val :idx) m0)))
+                                 :m0 m0}))
+          {:mem {}
+           :m0 ""}
+          input))
+
 (defn sum-mem [mem]
   (reduce (fn [accum [k v]] (+ accum (binary-str->num v))) 0 mem))
 
 (println "Part 1 result: " (sum-mem ((compute-part-1 input) :mem)))
-(println "Part 2 result: " )
+(println "Part 2 result: " (sum-mem ((compute-part-2 input) :mem)))
 
 ;;;;;;;;;;;;;;;;;;;;;; TESTS
 ;; (deftest is-valid?
