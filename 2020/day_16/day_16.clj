@@ -108,7 +108,7 @@
 
 (println "Part 1 result: " (apply + (flatten (validate-tickets (apply concat (map input ranges-keys)) (input :nearby-tickets)))))
 (println "Part 2 result: " (apply * (map #(nth (first (input :your-ticket)) %) departure-indexes)))
-
+;; Part 2 result:  2628667251989
 ;;;;;;;;;;;;;;;;;;;;;; TESTS
 ;; (deftest is-valid?
 ;;   (is (= 5 5)))
