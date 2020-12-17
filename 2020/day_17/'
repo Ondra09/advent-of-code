@@ -1,0 +1,77 @@
+#!/usr/local/bin/bb
+
+(ns main
+  (:require [clojure.test :refer [deftest is]]
+            [clojure.string :as str]
+            ))
+
+;; https://adventofcode.com/2020/day/11
+
+(defn split-input [s]
+  (str/split s #"\n"))
+
+(defn parse-input [line]
+  line)
+
+
+(def input (->> (slurp "input-test")
+                (str/trim)
+                (split-input)
+                (mapv #(parse-input %))
+                ))
+
+(defn input->map [input]
+  (second (reduce (fn [[x gmap] lane]
+                    [(inc x) (second (reduce (fn [[y acc] c] [(inc y) (assoc acc [x y 0] c)]) [0 gmap] lane))])
+                  [0 {}] input)))
+
+;; ----> Y
+;; |
+;; |
+;; v
+;; X
+
+(def world (input->map input))
+
+(def twenty-six-neighbourhood (for [x (range  3)
+                                    y (range 3)
+                                    z (range 3)
+                                    :when (not= x y z 1)]
+                                  [(dec x) (dec y) (dec z)]))
+
+(defn add-coords [[x0 y0 z0] [x1 y1 z1]]
+  [(+ x0 x1) (+ y0 y1) (+ z0 z1)])
+
+(defn sum-occupied [input]
+  (reduce #(if (= \# %2) (inc %1) %1) 0 input))
+
+(defn stays-active? [cube neighbourhood]
+  (and (= cube \#)
+       (or (= (sum-occupied neighbourhood 2))
+           (= (sum-occupied neighbourhood 3)))))
+
+(defn should-activate? [cube neighbourhood]
+  (and (= cube \.)
+       (= (sum-occupied neighbourhood 2))))
+
+(defn get-neighbourhood [world coords]
+  (mapv #(world (add-coords coords %))  twenty-six-neighbourhood))
+
+(defn simulate-step [world]
+  (reduce (fn [acc [coord val]]
+            (let [neigh (get-neighbourhood world coord)]
+              world)) world world))
+
+(println "Part 1 result: " (input->map input))
+(println "Part 2 result: " )
+
+
+
+;;;;;;;;;;;;;;;;;;;;;; TESTS
+;; (deftest is-valid?
+;;   (is (= 5 5)))
+
+;; (defn run-tests []
+;;   (is-valid?))
+
+; (run-tests)
