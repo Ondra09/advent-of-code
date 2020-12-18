@@ -24,7 +24,7 @@ To run them, you need to have installed [[https://github.com/borkdude/babashka][
 |  15 | Van Eck Sequence                                                         |
 |  16 | Set disjunctions                                                         |
 |  17 | Game Of Life 4D                                                          |
-|  18 |                                                                          |
+|  18 | Evaluate expresion; transform it infix -> postfix before                 |
 |  19 |                                                                          |
 |  20 |                                                                          |
 |  21 |                                                                          |
