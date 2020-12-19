@@ -25,7 +25,7 @@ To run them, you need to have installed [[https://github.com/borkdude/babashka][
 |  16 | Set disjunctions                                                         |
 |  17 | Game Of Life 4D                                                          |
 |  18 | Evaluate expresion; transform infix -> postfix; use stack                |
-|  19 |                                                                          |
+|  19 | Expand expresion recursively; Trick was to transform it to RE directly   |
 |  20 |                                                                          |
 |  21 |                                                                          |
 |  22 |                                                                          |
