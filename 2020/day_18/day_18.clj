@@ -87,7 +87,6 @@
 (println "Part 2 result: " (evaluate input precendences-pt2))
 
 
-
 ;;;;;;;;;;;;;;;;;;;;;; TESTS
 ;; (deftest is-valid?
 ;;   (is (= 5 5)))
