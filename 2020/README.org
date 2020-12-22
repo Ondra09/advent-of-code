@@ -28,7 +28,7 @@ To run them, you need to have installed [[https://github.com/borkdude/babashka][
 |  19 | Expand expresion recursively; Trick was to transform it to RE directly      |
 |  20 | Create neighbourhood map and find solution by backtracking                  |
 |  21 | Create mapping from alergen to ingredience and reduce sets in several steps |
-|  22 |                                                                             |
+|  22 | Basic recursion; keep focus on game rules                                   |
 |  23 |                                                                             |
 |  24 |                                                                             |
 |  25 |                                                                             |
