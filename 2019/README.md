@@ -1,7 +1,7 @@
-
 # Clojure Advent Of Code
 
 ## Optimization hints
+https://tech.redplanetlabs.com/2020/09/02/clojure-faster/
 https://www.youtube.com/watch?v=TW1ie0pIO_E
 
 -- functions
