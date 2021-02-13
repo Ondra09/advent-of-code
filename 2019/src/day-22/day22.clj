@@ -11,7 +11,7 @@
 (load-file "../util/simple2D.clj")
 (clojure.core/alias 's2D 'util.simple2D)
 
-(def input (->> (slurp "input.txt")
+(def input (->> (slurp "input-test2.txt")
                 (str/trim)))
 
 (defn parse-command [line]
@@ -68,111 +68,18 @@
     (= sym :deal) increment-n))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def result-1
-  (reduce (fn [acc [symbol coll]] (do
-                                    (println "sym: " symbol "coll: " coll)
-                                    (apply (symbol->fun symbol) acc coll)))
-          (range 10007)
-          (parse-input input)))
+;; (def result-1
+;;   (reduce (fn [acc [symbol coll]] (do
+;;                                     (println "sym: " symbol "coll: " coll)
+;;                                     (apply (symbol->fun symbol) acc coll)))
+;;           (range 10007)
+;;           (parse-input input)))
 
 
 (println "Part 1 result:"
          (.indexOf result-1 2019))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; PART 2
-;;
-;; Part 1 is naive and unoptimal, it runs for minutes or two
-;; even if this would be optimizet it is unpractical do tompute everything in part 2
-;; Two ideas how to make part 2 are
-;; 1) reduce input to remove instrucitons e.g. if we have reverse; cut n; reverse
-;;    we can simplify it to single instruction only: cut -n; however this would
-;;    pbly be still impractical as input is very large
-;;
-;; 2) result wants to only position of one number to be computed;
-;;    so we will rewrite all three functions to recompute position of only one item
 
-(defn deal-new-stack-2 [idx count]
-  (- (dec count) idx))
-
-(deftest deal-new-stack-2-test
-  (is (= (deal-new-stack-2 9 10) 0))
-  (is (= (deal-new-stack-2 0 10) 9))
-  (is (= (deal-new-stack-2 1 10) 8))
-  (is (= (deal-new-stack-2 0 7) 6))
-  (is (= (deal-new-stack-2 3 7) 3)))
-
-
-(defn cut-cards-2 [idx count cut]
-  (let [shift (mod cut count)
-        diff (- count shift)
-        ]
-    (mod (+ idx diff) count)))
-
-(defn cuts-same? [idx count cut]
-  (=
-   (cut-cards-2 idx count cut)
-   (.indexOf (cut-cards (range count) cut) idx)))
-
-(deftest cut-cards-2-test
-  (is (= (cut-cards-2 7 10 0) 7))
-  (is (= (cut-cards-2 0 10 0) 0))
-  (is (= (cut-cards-2 3 10 1) 2))
-  (is (= (cut-cards-2 3 10 2) 1))
-  (is (cuts-same? 7 10 -5652))
-  (is (cuts-same? 7 10 2))
-  (is (cuts-same? 7 10 -442))
-  (is (cuts-same? 7565 15671 59877))
-  (is (cuts-same? 7565 15671 -59877))
-  (is (cuts-same? 7565 15671 -59877))
-  (is (cuts-same? 13 151 -577))
-  (is (cuts-same? 79 151 -5774))
-  (is (cuts-same? 15 151 -87977))
-  (is (cuts-same? 77 151 7577)))
-
-(defn increment-n-2 [idx count n]
-  (mod (* idx n) count))
-
-(defn increment-same? [idx count n]
-  (=
-   (increment-n-2 idx count n)
-   (.indexOf (increment-n (range count) n) idx)))
-
-
-;; (increment-same? 2 10 7)
-
-(defn symbol->fun-2 [sym]
-  (cond
-    (= sym :cut) cut-cards-2
-    (= sym :new-stack) deal-new-stack-2
-    (= sym :deal) increment-n-2))
-
-(def input-2 (reverse (parse-input input)))
-(def one-tenth (long (/ 101741582076661 10)))
-
-(def result-2
-  (loop [idx 2020
-         repetitions 1] ;; use repetitions 101741582076661 numer and this will never finish
-    (if (= repetitions 0) idx
-        (do
-          (when (or
-                 (= repetitions one-tenth)
-                 (= repetitions (* 2 one-tenth))
-                 (= repetitions (* 3 one-tenth))
-                 (= repetitions (* 4 one-tenth))
-                 (= repetitions (* 5 one-tenth))
-                 (= repetitions (* 6 one-tenth))
-                 (= repetitions (* 7 one-tenth))
-                 (= repetitions (* 8 one-tenth))
-                 (= repetitions (* 9 one-tenth))
-                 (= repetitions (* 10 one-tenth)))
-            (println "progress" (float (/ repetitions 101741582076661))))
-          (recur (reduce (fn [acc [symbol coll]]
-                           (apply (symbol->fun-2 symbol) acc 119315717514047 coll))
-                         idx
-                         input-2) (dec repetitions)))))
-
- (println result-2))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 0 0                 0    0
 ;; 1 7                 7    3
@@ -252,13 +159,14 @@
 ;; ---------
 (def n 101741582076661)
 
-(def result-3
-  (loop [idx 2020
-         repetitions 1]
-    (if (= repetitions 0) idx
-        (recur (reduce (fn [acc [symbol coll]]
-                         (apply (symbol->fun-3 symbol) acc deck-size coll))
-                       idx
-                       input-3) (dec repetitions)))))
+(defn  run-sim-3 [input idx n repetitions]
+  (loop [idx idx
+         repetitions repetitions]
+    (cond (= repetitions 0) idx
+          ;; (/ repetitions )
+          :else (recur (reduce (fn [acc [symbol coll]]
+                                 (apply (symbol->fun-3 symbol) acc n coll))
+                               idx
+                               input) (dec repetitions)))))
 
-(println (long result-3))
+; (println "Result 3: " (long (run-sim-3 input-3 2020  deck-size n)))
